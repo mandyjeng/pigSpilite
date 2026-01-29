@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Camera, Image as ImageIcon, Heart, CreditCard, Calendar, Calculator, Scale, Check } from 'lucide-react';
-import { processAIInput, processReceiptImage } from '../services/aiService';
+import { processAIInput, processReceiptImage } from '../services/aiService';//注意
 import { Transaction, Category, Member } from '../types';
 
 interface AIInputProps {
@@ -166,28 +166,29 @@ const AIInput: React.FC<AIInputProps & { categories: string[] }> = ({ onAddTrans
                 </div>
               </div>
 
-              <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
-                <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">分類</label>
-                <select 
-                  className="w-full bg-transparent font-bold text-[13px] outline-none text-[#2D1B1B]"
-                  value={pendingRecord.category}
-                  onChange={e => setPendingRecord({...pendingRecord, category: e.target.value})}
-                >
-                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-
-              <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
-                <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">總額</label>
-                <div className="flex items-center gap-1.5">
-                   <span className="text-base font-black text-[var(--pig-primary)]">$</span>
-                   <input type="number" className="w-full bg-transparent font-black text-2xl outline-none text-[#2D1B1B] tracking-tight" value={pendingRecord.amount} onChange={e => setPendingRecord({...pendingRecord, amount: Number(e.target.value)})} />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
+                  <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">分類</label>
+                  <select 
+                    className="w-full bg-transparent font-bold text-[13px] outline-none text-[#2D1B1B] truncate"
+                    value={pendingRecord.category}
+                    onChange={e => setPendingRecord({...pendingRecord, category: e.target.value})}
+                  >
+                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
+                  <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">總額</label>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] font-black text-[var(--pig-primary)]">$</span>
+                    <input type="number" className="w-full bg-transparent font-black text-lg outline-none text-[#2D1B1B] tracking-tight" value={pendingRecord.amount} onChange={e => setPendingRecord({...pendingRecord, amount: Number(e.target.value)})} />
+                  </div>
                 </div>
               </div>
 
               <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
                 <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">品項細節</label>
-                <textarea className="w-full bg-transparent font-bold text-[13px] outline-none resize-none h-10 leading-tight text-[#2D1B1B]" value={pendingRecord.item} onChange={e => setPendingRecord({...pendingRecord, item: e.target.value})} />
+                <textarea className="w-full bg-transparent font-bold text-[13px] outline-none resize-none min-h-[80px] leading-tight text-[#2D1B1B]" value={pendingRecord.item} onChange={e => setPendingRecord({...pendingRecord, item: e.target.value})} />
               </div>
 
               <div className="bg-white p-2.5 rounded-xl border-[2px] border-[#2D1B1B] pig-shadow-sm">
@@ -210,37 +211,37 @@ const AIInput: React.FC<AIInputProps & { categories: string[] }> = ({ onAddTrans
                     <button onClick={() => setPendingRecord({...pendingRecord, splitType: 'custom'})} className={`px-1.5 py-0.5 rounded-md text-[8px] font-black transition-all ${pendingRecord.splitType === 'custom' ? 'bg-[var(--pig-primary)] text-[#2D1B1B]' : 'text-slate-400'}`}>自訂</button>
                   </div>
                 </div>
-                <div className="flex gap-2 mb-2">
+                <div className="flex gap-2 mb-3">
                   {members.map(m => (
-                    <button key={m.id} onClick={() => toggleSplitMember(m.id)} className={`flex-1 flex items-center gap-1.5 px-2 py-1.5 rounded-lg border-[1.5px] transition-all ${pendingRecord.splitWith?.includes(m.id) ? 'bg-[var(--pig-primary)] border-[#2D1B1B]' : 'bg-slate-50 border-slate-200 opacity-40'}`}>
-                      <span className="text-base">{getMemberEmoji(m.name)}</span>
-                      <span className="font-black text-[11px] truncate">{m.name}</span>
+                    <button key={m.id} onClick={() => toggleSplitMember(m.id)} className={`flex-1 flex items-center gap-1.5 px-2 py-2 rounded-xl border-[1.5px] transition-all ${pendingRecord.splitWith?.includes(m.id) ? 'bg-[var(--pig-primary)] border-[#2D1B1B] shadow-sm' : 'bg-slate-50 border-slate-200 opacity-40 grayscale'}`}>
+                      <span className="text-lg">{getMemberEmoji(m.name)}</span>
+                      <span className="font-black text-[12px] truncate">{m.name}</span>
                     </button>
                   ))}
                 </div>
                 {pendingRecord.splitType === 'custom' && (
-                  <div className="space-y-1.5 pt-1 animate-pop-in">
+                  <div className="space-y-2 pt-1 animate-pop-in">
                     {pendingRecord.splitWith?.map(mid => (
-                      <div key={mid} className="flex items-center justify-between bg-white p-2 rounded-lg border-[1.5px] border-[#2D1B1B]/10 shadow-sm">
-                        <div className="flex items-center gap-2">
-                           <div className="w-5 h-5 rounded-full bg-[var(--pig-secondary)] flex items-center justify-center text-[8px] border-[1px] border-[#2D1B1B]/5">{getMemberEmoji(members.find(m => m.id === mid)?.name || '')}</div>
-                           <span className="font-black text-[11px] text-[#2D1B1B]">{members.find(m => m.id === mid)?.name}</span>
+                      <div key={mid} className="flex items-center justify-between bg-white px-3 py-2.5 rounded-2xl border-[2px] border-[#2D1B1B]/10 pig-shadow-sm">
+                        <div className="flex items-center gap-3">
+                           <div className="w-7 h-7 rounded-full bg-[var(--pig-secondary)] flex items-center justify-center text-xs border-[1px] border-[#2D1B1B]/5">{getMemberEmoji(members.find(m => m.id === mid)?.name || '')}</div>
+                           <span className="font-black text-[13px] text-[#2D1B1B]">{members.find(m => m.id === mid)?.name}</span>
                         </div>
-                        <div className="flex items-center gap-1 bg-[var(--pig-secondary)] px-2 py-1 rounded-md border-[1px] border-[#2D1B1B]/5">
-                          <span className="text-[9px] font-black opacity-30">$</span>
-                          <input type="number" className="bg-transparent text-right font-black text-xs w-16 outline-none" value={pendingRecord.splitDetails?.[mid] || ''} onChange={(e) => handleCustomSplitChange(mid, e.target.value)} placeholder="0" />
+                        <div className="flex items-center gap-1.5 bg-[var(--pig-secondary)] px-3 py-1.5 rounded-xl border-[1px] border-[#2D1B1B]/10">
+                          <span className="text-[10px] font-black opacity-30">$</span>
+                          <input type="number" className="bg-transparent text-right font-black text-sm w-20 outline-none" value={pendingRecord.splitDetails?.[mid] || ''} onChange={(e) => handleCustomSplitChange(mid, e.target.value)} placeholder="0" />
                         </div>
                       </div>
                     ))}
                     <div className="flex items-center justify-end gap-1.5 mt-2">
-                       {diff === 0 ? <span className="text-[10px] font-black text-green-500 flex items-center gap-0.5"><Check size={10} strokeWidth={4} /> 金額平衡</span> : <span className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-md border-[1px] border-red-100">還差 ${Math.abs(diff)}</span>}
+                       {diff === 0 ? <span className="text-[10px] font-black text-green-500 flex items-center gap-0.5 bg-green-50 px-2 py-0.5 rounded-md border-[1px] border-green-100"><Check size={10} strokeWidth={4} /> 金額平衡</span> : <span className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-md border-[1px] border-red-100">還差 ${Math.abs(diff)}</span>}
                     </div>
                   </div>
                 )}
                 {pendingRecord.splitType === 'equal' && pendingRecord.splitWith && pendingRecord.splitWith.length > 0 && (
-                   <div className="text-center py-1.5 bg-[var(--pig-secondary)] rounded-lg border-[1px] border-dashed border-[#2D1B1B]/10">
-                      <p className="text-[8px] font-black text-[#2D1B1B]/40">每人負擔</p>
-                      <p className="text-sm font-black text-[#2D1B1B]">${Math.round(pendingRecord.amount / pendingRecord.splitWith.length)}</p>
+                   <div className="text-center py-2 bg-[var(--pig-secondary)] rounded-xl border-[1px] border-dashed border-[#2D1B1B]/10">
+                      <p className="text-[9px] font-black text-[#2D1B1B]/40 uppercase tracking-widest">每人負擔</p>
+                      <p className="text-base font-black text-[#2D1B1B]">${Math.round(pendingRecord.amount / pendingRecord.splitWith.length).toLocaleString()}</p>
                    </div>
                 )}
               </div>

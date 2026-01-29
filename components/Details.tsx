@@ -74,7 +74,6 @@ const Details: React.FC<DetailsProps> = ({ state, onDeleteTransaction, updateSta
     setEditingItem({ ...editingItem, splitWith: nextSplit, isSplit: nextSplit.length > 1 });
   };
 
-  // Fix: Added missing handleCustomSplitChange function
   const handleCustomSplitChange = (memberId: string, value: string) => {
     if (!editingItem) return;
     const details = { ...(editingItem.splitDetails || {}) };
@@ -148,18 +147,55 @@ const Details: React.FC<DetailsProps> = ({ state, onDeleteTransaction, updateSta
                 <div className="bg-[var(--pig-secondary)] p-3 rounded-xl border-[2px] border-[#2D1B1B]"><label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">日期</label><input type="date" className="w-full bg-transparent font-black text-base outline-none text-[#2D1B1B]" value={editingItem.date} onChange={e => setEditingItem({...editingItem, date: e.target.value})} /></div>
                 <div className="bg-[var(--pig-secondary)] p-3 rounded-xl border-[2px] border-[#2D1B1B]"><label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">店家</label><input className="w-full bg-transparent font-black text-base outline-none text-[#2D1B1B]" value={editingItem.merchant} onChange={e => setEditingItem({...editingItem, merchant: e.target.value})} /></div>
               </div>
-              <div className="bg-[var(--pig-secondary)] p-3 rounded-xl border-[2px] border-[#2D1B1B] transition-colors duration-300">
-                <label className="text-[9px] font-black text-slate-400 uppercase mb-0.5 block">分類</label>
-                <select className="w-full bg-transparent font-black text-base outline-none text-[#2D1B1B]" value={editingItem.category} onChange={e => setEditingItem({...editingItem, category: e.target.value})}>
-                  {state.categories.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-[var(--pig-secondary)] p-3 rounded-xl border-[2px] border-[#2D1B1B] transition-colors duration-300">
+                  <label className="text-[9px] font-black text-slate-400 uppercase mb-0.5 block">分類</label>
+                  <select className="w-full bg-transparent font-black text-base outline-none text-[#2D1B1B] truncate" value={editingItem.category} onChange={e => setEditingItem({...editingItem, category: e.target.value})}>
+                    {state.categories.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="bg-[var(--pig-secondary)] p-3 rounded-xl border-[2px] border-[#2D1B1B]">
+                  <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">總額</label>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-black text-[var(--pig-primary)]">$</span>
+                    <input type="number" className="w-full bg-transparent font-black text-xl outline-none text-[#2D1B1B] tracking-tight" value={editingItem.amount} onChange={e => setEditingItem({...editingItem, amount: Number(e.target.value)})} />
+                  </div>
+                </div>
               </div>
-              <div className="bg-[var(--pig-secondary)] p-3 rounded-xl border-[2px] border-[#2D1B1B]"><label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">總額</label><div className="flex items-center gap-1.5"><span className="text-xl font-black text-[var(--pig-primary)]">$</span><input type="number" className="w-full bg-transparent font-black text-2xl outline-none text-[#2D1B1B] tracking-tight" value={editingItem.amount} onChange={e => setEditingItem({...editingItem, amount: Number(e.target.value)})} /></div></div>
-              <div className="bg-[var(--pig-secondary)] p-3 rounded-xl border-[2px] border-[#2D1B1B]"><label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">品項細節</label><textarea className="w-full bg-transparent font-black text-[13px] outline-none text-[#2D1B1B] min-h-[60px] resize-none leading-tight" value={editingItem.item} onChange={e => setEditingItem({...editingItem, item: e.target.value})} /></div>
+
+              <div className="bg-[var(--pig-secondary)] p-3 rounded-xl border-[2px] border-[#2D1B1B]">
+                <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">品項細節</label>
+                <textarea className="w-full bg-transparent font-black text-[14px] outline-none text-[#2D1B1B] min-h-[100px] resize-none leading-relaxed" value={editingItem.item} onChange={e => setEditingItem({...editingItem, item: e.target.value})} />
+              </div>
+
               <div className="bg-white p-3 rounded-xl border-[2px] border-[#2D1B1B] pig-shadow-sm"><label className="text-[9px] font-black text-[#2D1B1B] flex items-center gap-1.5 mb-2"><CreditCard size={10} className="text-[var(--pig-primary)]" /> 誰付款？</label><div className="flex gap-2">{state.members.map(m => (<button key={m.id} onClick={() => setEditingItem({...editingItem, payerId: m.id})} className={`flex-1 flex items-center gap-1.5 px-2 py-2 rounded-lg border-[1.5px] transition-all ${editingItem.payerId === m.id ? 'bg-[var(--pig-primary)] border-[#2D1B1B] shadow-sm' : 'bg-slate-50 border-slate-200 opacity-40 grayscale'}`}><span className="text-base">{getMemberEmoji(m.name)}</span><span className="font-black text-[11px] truncate">{m.name}</span></button>))}</div></div>
-              <div className="bg-white p-3 rounded-xl border-[2px] border-[#2D1B1B] pig-shadow-sm"><div className="flex items-center justify-between mb-2"><label className="text-[9px] font-black text-[#2D1B1B] flex items-center gap-1.5"><Heart size={10} className="text-[var(--pig-primary)] fill-[var(--pig-primary)]" /> 誰分錢？</label><div className="flex bg-[var(--pig-secondary)] rounded-lg p-0.5 border-[1px] border-[#2D1B1B]/10"><button onClick={() => setEditingItem({...editingItem, splitType: 'equal'})} className={`px-1.5 py-0.5 rounded-md text-[8px] font-black ${editingItem.splitType === 'equal' ? 'bg-[var(--pig-primary)] text-[#2D1B1B]' : 'text-slate-400'}`}>平分</button><button onClick={() => setEditingItem({...editingItem, splitType: 'custom'})} className={`px-1.5 py-0.5 rounded-md text-[8px] font-black ${editingItem.splitType === 'custom' ? 'bg-[var(--pig-primary)] text-[#2D1B1B]' : 'text-slate-400'}`}>自訂</button></div></div>
-                <div className="flex gap-2 mb-2">{state.members.map(m => (<button key={m.id} onClick={() => toggleSplitMember(m.id)} className={`flex-1 flex items-center gap-1.5 px-2 py-2 rounded-lg border-[1.5px] transition-all ${editingItem.splitWith?.includes(m.id) ? 'bg-[var(--pig-primary)] border-[#2D1B1B] shadow-sm' : 'bg-slate-50 border-slate-200 opacity-40 grayscale'}`}><span className="text-base">{getMemberEmoji(m.name)}</span><span className="font-black text-[11px] truncate">{m.name}</span></button>))}</div>
-                {editingItem.splitType === 'custom' && (<div className="space-y-1.5 pt-1 animate-pop-in">{editingItem.splitWith?.map(mid => (<div key={mid} className="flex items-center justify-between bg-white p-2 rounded-lg border-[1.5px] border-[#2D1B1B]/10 shadow-sm"><div className="flex items-center gap-2"><div className="w-5 h-5 rounded-full bg-[var(--pig-secondary)] flex items-center justify-center text-[8px] border-[1px] border-[#2D1B1B]/5">{getMemberEmoji(state.members.find(m => m.id === mid)?.name || '')}</div><span className="font-black text-[11px] text-[#2D1B1B]">{state.members.find(m => m.id === mid)?.name}</span></div><div className="flex items-center gap-1 bg-[var(--pig-secondary)] px-2 py-1 rounded-md border-[1px] border-[#2D1B1B]/5"><span className="text-[9px] font-black opacity-30">$</span><input type="number" className="bg-transparent text-right font-black text-xs w-16 outline-none" value={editingItem.splitDetails?.[mid] || ''} onChange={(e) => handleCustomSplitChange(mid, e.target.value)} /></div></div>))}<div className="flex items-center justify-end gap-1.5 mt-2">{diff === 0 ? <span className="text-[10px] font-black text-green-500 flex items-center gap-0.5"><Check size={10} strokeWidth={4} /> 金額平衡</span> : <span className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-md border-[1px] border-red-100">還差 ${Math.abs(diff)}</span>}</div></div>)}
+              <div className="bg-white p-3 rounded-xl border-[2px] border-[#2D1B1B] pig-shadow-sm">
+                <div className="flex items-center justify-between mb-2"><label className="text-[9px] font-black text-[#2D1B1B] flex items-center gap-1.5"><Heart size={10} className="text-[var(--pig-primary)] fill-[var(--pig-primary)]" /> 誰分錢？</label><div className="flex bg-[var(--pig-secondary)] rounded-lg p-0.5 border-[1px] border-[#2D1B1B]/10"><button onClick={() => setEditingItem({...editingItem, splitType: 'equal'})} className={`px-1.5 py-0.5 rounded-md text-[8px] font-black ${editingItem.splitType === 'equal' ? 'bg-[var(--pig-primary)] text-[#2D1B1B]' : 'text-slate-400'}`}>平分</button><button onClick={() => setEditingItem({...editingItem, splitType: 'custom'})} className={`px-1.5 py-0.5 rounded-md text-[8px] font-black ${editingItem.splitType === 'custom' ? 'bg-[var(--pig-primary)] text-[#2D1B1B]' : 'text-slate-400'}`}>自訂</button></div></div>
+                <div className="flex gap-2 mb-3">{state.members.map(m => (<button key={m.id} onClick={() => toggleSplitMember(m.id)} className={`flex-1 flex items-center gap-1.5 px-2 py-2 rounded-xl border-[1.5px] transition-all ${editingItem.splitWith?.includes(m.id) ? 'bg-[var(--pig-primary)] border-[#2D1B1B] shadow-sm' : 'bg-slate-50 border-slate-200 opacity-40 grayscale'}`}><span className="text-lg">{getMemberEmoji(m.name)}</span><span className="font-black text-[12px] truncate">{m.name}</span></button>))}</div>
+                {editingItem.splitType === 'custom' && (
+                  <div className="space-y-2 pt-1 animate-pop-in">
+                    {editingItem.splitWith?.map(mid => (
+                      <div key={mid} className="flex items-center justify-between bg-white px-3 py-2.5 rounded-2xl border-[2px] border-[#2D1B1B]/10 pig-shadow-sm">
+                        <div className="flex items-center gap-3">
+                           <div className="w-7 h-7 rounded-full bg-[var(--pig-secondary)] flex items-center justify-center text-xs border-[1px] border-[#2D1B1B]/5">{getMemberEmoji(state.members.find(m => m.id === mid)?.name || '')}</div>
+                           <span className="font-black text-[13px] text-[#2D1B1B]">{state.members.find(m => m.id === mid)?.name}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-[var(--pig-secondary)] px-3 py-1.5 rounded-xl border-[1px] border-[#2D1B1B]/10">
+                          <span className="text-[10px] font-black opacity-30">$</span>
+                          <input type="number" className="bg-transparent text-right font-black text-sm w-20 outline-none" value={editingItem.splitDetails?.[mid] || ''} onChange={(e) => handleCustomSplitChange(mid, e.target.value)} placeholder="0" />
+                        </div>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-end gap-1.5 mt-2">{diff === 0 ? <span className="text-[10px] font-black text-green-500 flex items-center gap-0.5 bg-green-50 px-2 py-0.5 rounded-md border-[1px] border-green-100"><Check size={10} strokeWidth={4} /> 金額平衡</span> : <span className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-md border-[1px] border-red-100">還差 ${Math.abs(diff)}</span>}</div>
+                  </div>
+                )}
+                {editingItem.splitType === 'equal' && editingItem.splitWith && editingItem.splitWith.length > 0 && (
+                   <div className="text-center py-2 bg-[var(--pig-secondary)] rounded-xl border-[1px] border-dashed border-[#2D1B1B]/10">
+                      <p className="text-[9px] font-black text-[#2D1B1B]/40 uppercase tracking-widest">每人負擔</p>
+                      <p className="text-base font-black text-[#2D1B1B]">${Math.round(editingItem.amount / editingItem.splitWith.length).toLocaleString()}</p>
+                   </div>
+                )}
               </div>
             </div>
             <div className="flex gap-2.5 mt-4"><button onClick={() => setShowDeleteConfirm(true)} className="p-3 bg-white border-[2px] border-[#2D1B1B] rounded-xl text-red-500 active:scale-95 transition-all"><Trash2 size={20} strokeWidth={4} /></button><button onClick={handleSaveEdit} disabled={isDeleting || isSaving || (editingItem.splitType === 'custom' && diff !== 0)} className={`flex-1 py-3 border-[2px] border-[#2D1B1B] text-[#2D1B1B] rounded-xl font-black text-lg pig-shadow flex items-center justify-center gap-2 active:translate-y-0.5 transition-all ${editingItem.splitType === 'custom' && diff !== 0 ? 'bg-slate-100 opacity-50' : 'bg-[var(--pig-primary)]'}`}>{isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} strokeWidth={4} />}儲存變更</button></div>
