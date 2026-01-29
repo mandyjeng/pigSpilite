@@ -3,17 +3,13 @@ import { getGeminiModel, cleanJsonResponse, expenseSchema } from "../services/ge
 const today = new Date().toISOString().split('T')[0];
 
 /**
- * 處理文字輸入記帳
+ * 文字記帳辨識
  */
 export const processAIInput = async (text: string, categories: string[]) => {
   const model = getGeminiModel();
   const catList = categories.join('、');
   
-  const response = await model.generateContent({
-    contents: [{
-      role: 'user',
-      parts: [{
-        text: `這是一筆文字記帳資訊： "${text}"。
+  const prompt = `這是一筆文字記帳資訊： "${text}"。
 今天日期是 ${today}。
 可選分類有：${catList}。
 
@@ -22,9 +18,10 @@ export const processAIInput = async (text: string, categories: string[]) => {
 2. 項目內容 (description)：列出品項與金額。
 3. 金額 (amount)：加總。
 4. 類型 (type)：支出或收入。
-5. 分類 (category)：必須從「${catList}」中挑選一個最合適的。`
-      }]
-    }],
+5. 分類 (category)：必須從「${catList}」中挑選一個最合適的一個。`;
+
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: expenseSchema,
@@ -32,39 +29,29 @@ export const processAIInput = async (text: string, categories: string[]) => {
     },
   });
   
-  return cleanJsonResponse(response.response.text() || '{}');
+  return cleanJsonResponse(result.response.text());
 };
 
 /**
- * 處理收據影像辨識
+ * 圖片收據辨識
  */
 export const processReceiptImage = async (base64Data: string, mimeType: string, categories: string[]) => {
   const model = getGeminiModel();
   const catList = categories.join('、');
 
-  const imagePart = {
-    inlineData: { data: base64Data, mimeType: mimeType },
-  };
-  
-  const textPart = {
-    text: `請詳細辨識這張收據影像，並回傳 JSON 格式。
-今天日期是 ${today}。
-可選分類清單：${catList}。
-
-【核心規則】：
-1. 提取最終付款總額。
-2. merchant: 提取店家名稱。
-3. description: 格式為「品項 x數量 $金額」。
-4. category: 必須從「${catList}」中選擇。`,
-  };
-
-  const response = await model.generateContent({
-    contents: [{ role: 'user', parts: [imagePart, textPart] }],
+  const result = await model.generateContent({
+    contents: [{
+      role: 'user',
+      parts: [
+        { inlineData: { data: base64Data, mimeType: mimeType } },
+        { text: `請辨識收據內容。今天日期：${today}。可選分類：${catList}。請提取總金額、店家名稱及明細。` }
+      ]
+    }],
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: expenseSchema,
     },
   });
   
-  return cleanJsonResponse(response.response.text() || '{}');
+  return cleanJsonResponse(result.response.text());
 };

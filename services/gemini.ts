@@ -1,7 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-
-// 定義回傳的 JSON 結構
+// 1. 定義回傳的 JSON 結構
 export const expenseSchema = {
   type: Type.OBJECT,
   properties: {
@@ -15,23 +14,21 @@ export const expenseSchema = {
   required: ['merchant', 'description', 'amount', 'category', 'type', 'date'],
 };
 
-// 初始化 AI 實例
+// 2. 初始化 AI 實例
 export const getGeminiModel = () => {
-  // 修正 1: 根據你的截圖，Vite 環境變數名稱應為 GOOGLE_API_KEY
-  const apiKey = import.meta.env.GOOGLE_API_KEY; 
+  // 同時檢查帶有 VITE_ 與不帶前綴的變數
+  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || import.meta.env.GOOGLE_API_KEY; 
   
   if (!apiKey) {
-    throw new Error("找不到 API Key，請檢查環境變數設定。");
+    throw new Error("找不到 API Key，請檢查 Vercel 環境變數設定。");
   }
 
-  // 修正 2: 使用 GoogleGenAI 而非 GoogleGenerativeAI
   const ai = new GoogleGenAI(apiKey); 
-  
-  // 修正 3: 直接取得模型實例，目前的 SDK 寫法通常如下
+  // 使用穩定版模型
   return ai.getGenerativeModel({ model: "gemini-1.5-flash" }); 
 };
 
-// 清理與轉換 JSON 字串
+// 3. 清理與轉換 JSON 字串
 export const cleanJsonResponse = (text: string) => {
   if (!text) return {};
   try {
