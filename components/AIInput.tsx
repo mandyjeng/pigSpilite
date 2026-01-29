@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Camera, Image as ImageIcon, Heart, CreditCard, Calendar, Calculator, Scale, Check } from 'lucide-react';
-import { processAIInput, processReceiptImage } from '../api/analyze';
+import { processAIInput, processReceiptImage } from '../services/aiService';
 import { Transaction, Category, Member } from '../types';
 
 interface AIInputProps {
