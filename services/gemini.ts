@@ -1,4 +1,5 @@
-import { GoogleGenerativeAI, Type } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
+
 
 // 定義回傳的 JSON 結構
 export const expenseSchema = {
@@ -16,12 +17,18 @@ export const expenseSchema = {
 
 // 初始化 AI 實例
 export const getGeminiModel = () => {
-  // 注意：在 Vite 中環境變數通常是 import.meta.env.VITE_API_KEY
-  // const apiKey = import.meta.env.GOOGLE_API_KEY;  
-  // const ai = new GoogleGenAI({ apiKey });
-  const ai = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
+  // 修正 1: 根據你的截圖，Vite 環境變數名稱應為 GOOGLE_API_KEY
+  const apiKey = import.meta.env.GOOGLE_API_KEY; 
+  
+  if (!apiKey) {
+    throw new Error("找不到 API Key，請檢查環境變數設定。");
+  }
 
-  return ai.models.get('gemini-flash-latest'); // 建議使用穩定版名稱
+  // 修正 2: 使用 GoogleGenAI 而非 GoogleGenerativeAI
+  const ai = new GoogleGenAI(apiKey); 
+  
+  // 修正 3: 直接取得模型實例，目前的 SDK 寫法通常如下
+  return ai.getGenerativeModel({ model: "gemini-1.5-flash" }); 
 };
 
 // 清理與轉換 JSON 字串
