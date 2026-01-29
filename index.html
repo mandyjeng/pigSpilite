@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小豬與 Mandy 的豬豬帳本 🐷</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pig-primary: #FFB1B1;
+            --pig-secondary: #FFF5F5;
+            --pig-bg: #FFF9F9;
+            --theme-black: #2D1B1B;
+        }
+
+        .theme-matcha {
+            --pig-primary: #A2D2A2;
+            --pig-secondary: #F0F7F0;
+            --pig-bg: #F7FAF7;
+        }
+
+        body { 
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--pig-bg);
+            color: var(--theme-black);
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s ease;
+            overflow-x: hidden;
+            padding-right: 4px;
+        }
+
+        .pig-border {
+            border: 3px solid var(--theme-black);
+        }
+
+        .pig-shadow {
+            box-shadow: 4px 4px 0px 0px var(--theme-black);
+        }
+        
+        .pig-shadow-sm {
+            box-shadow: 2px 2px 0px 0px var(--theme-black);
+        }
+
+        .emoji-pop {
+            filter: drop-shadow(0px 0px 1px white) drop-shadow(0px 0px 2px white);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .text-fit-amount {
+            word-break: break-all;
+            line-height: 1.1;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        textarea {
+            line-height: 1.4 !important;
+        }
+        
+        .sticky {
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* 彈窗動畫 */
+        @keyframes pop-in {
+            0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .animate-pop-in {
+            animation: pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes backdrop-fade {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .animate-backdrop {
+            animation: backdrop-fade 0.2s ease-out forwards;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="overflow-x-hidden">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>
