@@ -17,7 +17,7 @@ export const expenseSchema = {
 // 初始化 AI 實例
 export const getGeminiModel = () => {
   // 注意：在 Vite 中環境變數通常是 import.meta.env.VITE_API_KEY
-  const apiKey = import.meta.env.VITE_API_KEY || process.env.API_KEY;
+  const apiKey = import.meta.env.GOOGLE_API_KEY;  
   const ai = new GoogleGenAI({ apiKey });
   return ai.models.get('gemini-flash-latest'); // 建議使用穩定版名稱
 };
