@@ -19,7 +19,7 @@ export const getGeminiModel = () => {
   // 注意：在 Vite 中環境變數通常是 import.meta.env.VITE_API_KEY
   const apiKey = import.meta.env.VITE_API_KEY || process.env.API_KEY;
   const ai = new GoogleGenAI({ apiKey });
-  return ai.models.get('gemini-1.5-flash'); // 建議使用穩定版名稱
+  return ai.models.get('gemini-flash-latest'); // 建議使用穩定版名稱
 };
 
 // 清理與轉換 JSON 字串
