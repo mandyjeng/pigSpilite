@@ -116,9 +116,10 @@ export default async function handler(req: any, res: any) {
 
     // 呼叫 Google GenAI
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash-002', // 建議升級到 2.0 flash，速度更快且免費
+      model: 'gemini-2.0-flash', // 建議升級到 2.0 flash，速度更快且免費
       //gemini-1.5-flash-002
       //gemini-3-flash-preview
+      //gemini-2.0-flash
       contents: contents,
       config: {
         responseMimeType: "application/json",
