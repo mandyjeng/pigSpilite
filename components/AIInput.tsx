@@ -2,7 +2,8 @@
 import { Transaction, Member } from '../types';
 import * as React from 'react';
 import * as Lucide from 'lucide-react';
-import { processAIInput, processReceiptImage } from '../services/aiService';//注意
+import { processAIInput, processReceiptImage } from '../services/aiService';//注意//注意
+import { getMemberEmoji } from '../constants';
 
 interface AIInputProps {
   onAddTransaction: (t: Partial<Transaction>) => void;
@@ -131,8 +132,6 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
     details[memberId] = Number(value) || 0;
     setPendingRecord({ ...pendingRecord, splitDetails: details });
   };
-
-  const getMemberEmoji = (name: string) => name?.includes('Mandy') ? '💝' : '🐽';
   
   const customTotal = React.useMemo(() => {
     return (pendingRecord?.splitWith || []).reduce((sum, id) => {
@@ -177,7 +176,7 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
 
       {pendingRecord && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-5 bg-[#2D1B1B]/50 backdrop-blur-sm animate-backdrop">
-          <div className="bg-white border-[4px] border-[#2D1B1B] rounded-[2.5rem] w-full max-w-sm p-5 pig-shadow relative overflow-hidden animate-pop-in">
+          <div className="bg-white border-[4px] border-[#2D1B1B] rounded-[2.5rem] w-full max-sm p-5 pig-shadow relative overflow-hidden animate-pop-in">
              <div className="flex justify-between items-center mb-3">
                <div className="w-8" />
                <h3 className="font-black text-xl text-center text-[#2D1B1B]">確認帳單 🐽</h3>

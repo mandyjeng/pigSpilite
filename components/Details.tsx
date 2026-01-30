@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { Transaction, Category, AppState } from '../types';
-import { getCategoryIcon, getCategoryColorClass } from '../constants';
+import { getCategoryIcon, getCategoryColorClass, getMemberEmoji } from '../constants';
 import * as Lucide from 'lucide-react';
 import { updateTransactionInSheet } from '../services/sheets';
 
@@ -104,7 +104,6 @@ const Details: React.FC<DetailsProps> = ({ state, onDeleteTransaction, updateSta
   const diff = editingItem ? editingItem.amount - (editingItem.splitWith?.reduce((sum, id) => sum + (editingItem.splitDetails?.[id] || 0), 0) || 0) : 0;
   const getWeekday = (d: string) => new Date(d).toLocaleDateString('zh-TW', { weekday: 'long' });
   const getInitial = (n: string | any) => n?.trim().charAt(0) || '?';
-  const getMemberEmoji = (n: string) => n.includes('Mandy') ? '💝' : '🐽';
 
   return (
     <div className="relative">

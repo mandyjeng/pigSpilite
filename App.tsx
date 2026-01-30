@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { AppState, Transaction, Category, Member } from './types';
-import { TABS } from './constants';
+import { TABS, getMemberEmoji } from './constants';
 import Overview from './components/Overview';
 import Details from './components/Details';
 import Settings from './components/Settings';
@@ -175,7 +175,7 @@ const App: React.FC = () => {
             onClick={() => setState(prev => ({ ...prev, currentUser: prev.currentUser === '小豬' ? 'Mandy' : '小豬' }))}
             className="h-10 px-4 bg-white border-[3px] border-[#2D1B1B] rounded-full flex items-center gap-2 font-black pig-shadow-sm active:translate-y-0.5 transition-all"
           >
-            <span className="text-xl emoji-pop">{state.currentUser === '小豬' ? '🐽' : '💝'}</span>
+            <span className="text-xl emoji-pop">{getMemberEmoji(state.currentUser)}</span>
             <span className="text-[#2D1B1B] text-sm font-black">{state.currentUser}</span>
           </button>
         </header>

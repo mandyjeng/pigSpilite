@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { AppState } from '../types';
+import { getMemberEmoji } from '../constants';
 import { UserCheck, Palette, RefreshCw } from 'lucide-react';
 
 interface SettingsProps {
@@ -10,11 +11,6 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ state, updateState, onReloadManagement }) => {
-  const getUserEmoji = (name: string) => {
-    if (name.includes('Mandy')) return '❤️';
-    return '🐽';
-  };
-
   return (
     <div className="space-y-8 pb-32">
       {/* 1. 資料同步 */}
@@ -40,7 +36,7 @@ const Settings: React.FC<SettingsProps> = ({ state, updateState, onReloadManagem
         </div>
       </section>
 
-      {/* 2. 切換身份 - 統一粉嫩風格 */}
+      {/* 2. 切換身份 */}
       <section className="bg-white border-[3px] border-[#2D1B1B] rounded-[2.5rem] p-6 pig-shadow">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-[var(--pig-secondary)] text-[var(--pig-primary)] rounded-full flex items-center justify-center border-[2px] border-[#2D1B1B]">
@@ -63,7 +59,7 @@ const Settings: React.FC<SettingsProps> = ({ state, updateState, onReloadManagem
                 }`}
               >
                 <span className={`text-3xl mb-1 transition-transform group-active:scale-90 ${isActive ? 'emoji-pop' : 'opacity-40 grayscale-[0.5]'}`}>
-                  {getUserEmoji(m.name)}
+                  {getMemberEmoji(m.name)}
                 </span>
                 <span className="font-black text-lg tracking-tight">{m.name}</span>
                 {isActive && (
