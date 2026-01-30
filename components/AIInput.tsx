@@ -42,7 +42,7 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
         merchant: result.merchant || '商家',
         amount: amount,
         type: (result.type === '收入' ? '收入' : '支出'),
-        category: result.category || categories[categories.length - 1],
+        category: result.category || (categories.length > 0 ? categories[0] : '其他'),
         date: result.date || new Date().toISOString().split('T')[0],
         payerId: currentUserId,
         isSplit: defaultSplitWith.length > 1,
@@ -65,31 +65,36 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
     setIsLoading(true);
     try {
       const reader = new FileReader();
-      reader.readAsDataURL(file);
       reader.onload = async () => {
-        const base64 = (reader.result as string).split(',')[1];
-        const result = await processReceiptImage(base64, file.type, categories);
-        const amount = Number(result.amount) || 0;
-        const defaultSplitWith = members.map(m => m.id);
-        setPendingRecord({
-          item: result.description || '辨識項目',
-          merchant: result.merchant || '辨識商家',
-          amount: amount,
-          type: (result.type === '收入' ? '收入' : '支出'),
-          category: result.category || categories[categories.length - 1],
-          date: result.date || new Date().toISOString().split('T')[0],
-          payerId: currentUserId,
-          isSplit: defaultSplitWith.length > 1,
-          splitType: 'equal',
-          splitWith: defaultSplitWith,
-          splitDetails: {},
-          mapUrl: ''
-        });
-        setIsLoading(false);
+        try {
+          const base64 = (reader.result as string).split(',')[1];
+          const result = await processReceiptImage(base64, file.type, categories);
+          const amount = Number(result.amount) || 0;
+          const defaultSplitWith = members.map(m => m.id);
+          setPendingRecord({
+            item: result.description || '辨識項目',
+            merchant: result.merchant || '辨識商家',
+            amount: amount,
+            type: (result.type === '收入' ? '收入' : '支出'),
+            category: result.category || (categories.length > 0 ? categories[0] : '其他'),
+            date: result.date || new Date().toISOString().split('T')[0],
+            payerId: currentUserId,
+            isSplit: defaultSplitWith.length > 1,
+            splitType: 'equal',
+            splitWith: defaultSplitWith,
+            splitDetails: {},
+            mapUrl: ''
+          });
+        } catch (innerErr) {
+          alert('AI 辨識圖片失敗');
+        } finally {
+          setIsLoading(false);
+        }
       };
+      reader.readAsDataURL(file);
     } catch (err) {
       setIsLoading(false);
-      alert('辨識失敗');
+      alert('讀取檔案失敗');
     } finally {
       e.target.value = '';
     }
@@ -97,7 +102,6 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
 
   const openGoogleMap = () => {
     if (!pendingRecord) return;
-    // 如果已有網址則開啟網址，否則根據店家名稱搜尋
     const url = pendingRecord.mapUrl && pendingRecord.mapUrl.startsWith('http') 
       ? pendingRecord.mapUrl 
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pendingRecord.merchant || '')}`;
@@ -125,10 +129,13 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
     setPendingRecord({ ...pendingRecord, splitDetails: details });
   };
 
-  const getMemberEmoji = (name: string) => name.includes('Mandy') ? '💝' : '🐽';
-  const customTotal = pendingRecord?.splitDetails 
-    ? (pendingRecord.splitWith || []).reduce((sum, id) => sum + (pendingRecord.splitDetails?.[id] || 0), 0) || 0
-    : 0;
+  const getMemberEmoji = (name: string) => name?.includes('Mandy') ? '💝' : '🐽';
+  
+  // 安全地計算總額
+  const customTotal = (pendingRecord?.splitWith || []).reduce((sum, id) => {
+    return sum + (pendingRecord?.splitDetails?.[id] || 0);
+  }, 0);
+  
   const diff = (pendingRecord?.amount || 0) - customTotal;
 
   return (
@@ -203,7 +210,7 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
                   <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">總額</label>
                   <div className="flex items-center gap-1">
                     <span className="text-[10px] font-black text-[var(--pig-primary)]">$</span>
-                    <input type="number" className="w-full bg-transparent font-black text-lg outline-none text-[#2D1B1B] tracking-tight" value={pendingRecord.amount} onChange={e => setPendingRecord({...pendingRecord, amount: Number(e.target.value)})} />
+                    <input type="number" className="w-full bg-transparent font-black text-lg outline-none text-[#2D1B1B] tracking-tight" value={pendingRecord.amount || 0} onChange={e => setPendingRecord({...pendingRecord, amount: Number(e.target.value)})} />
                   </div>
                 </div>
               </div>
