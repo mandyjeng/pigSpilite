@@ -14,16 +14,16 @@ interface AIInputProps {
 }
 
 const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, members = [], currentUserId, categories = [] }) => {
-  const [inputText, setInputText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [pendingRecord, setPendingRecord] = useState<Partial<Transaction> | null>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [inputText, setInputText] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [pendingRecord, setPendingRecord] = React.useState<Partial<Transaction> | null>(null);
+  const cameraInputRef = React.useRef<HTMLInputElement>(null);
+  const galleryInputRef = React.useRef<HTMLInputElement>(null);
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => { setIsAIProcessing(isLoading); }, [isLoading, setIsAIProcessing]);
+  React.useEffect(() => { setIsAIProcessing(isLoading); }, [isLoading, setIsAIProcessing]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 140)}px`;
@@ -134,8 +134,8 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
 
   const getMemberEmoji = (name: string) => name?.includes('Mandy') ? '💝' : '🐽';
   
-  // 計算邏輯使用 useMemo 保護，防止意外 crash
-  const customTotal = useMemo(() => {
+  // 使用 React.useMemo 確保引用正確
+  const customTotal = React.useMemo(() => {
     return (pendingRecord?.splitWith || []).reduce((sum, id) => {
       return sum + (pendingRecord?.splitDetails?.[id] || 0);
     }, 0);

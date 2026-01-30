@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AppState, Transaction, Category, Member } from './types';
 import { TABS } from './constants';
 import Overview from './components/Overview';
@@ -9,10 +9,12 @@ import { fetchTransactionsFromSheet, fetchCategoriesFromSheet, saveToGoogleSheet
 
 const SHEET_URL = "https://script.google.com/macros/s/AKfycbyNMRpBKO4HYQrIwr3E984B7cUJNaDjQdr-KLDtWM2ykWXk6clvc_QlSGWS3f1GCBS-/exec";
 
-// 更具相容性的 ID 產生器，避免 crypto.randomUUID 在舊手機或特定環境失效
 const generateId = () => {
   try {
-    return crypto.randomUUID();
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
   } catch (e) {
     return Date.now().toString(36) + Math.random().toString(36).substring(2);
   }
@@ -39,7 +41,6 @@ const App: React.FC = () => {
       const saved = localStorage.getItem('piggy_ledger_simple');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // 強制檢查關鍵屬性是否存在且為陣列，防止舊資料導致崩潰
         return {
           ...defaultState,
           ...parsed,
