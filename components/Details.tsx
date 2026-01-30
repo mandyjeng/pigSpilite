@@ -12,7 +12,7 @@ interface DetailsProps {
   onSync: () => void;
   isSyncing: boolean;
   initialEditId?: string | null;
-  onClearInitialEdit?: ()void;
+  onClearInitialEdit?: () => void;
 }
 
 const Details: React.FC<DetailsProps> = ({ state, onDeleteTransaction, updateState, onSync, isSyncing, initialEditId, onClearInitialEdit }) => {
