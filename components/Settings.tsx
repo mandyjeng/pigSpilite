@@ -11,7 +11,7 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({ state, updateState, onReloadManagement }) => {
   const getUserEmoji = (name: string) => {
-    if (name.includes('Mandy')) return '💝';
+    if (name.includes('Mandy')) return '❤️';
     return '🐽';
   };
 

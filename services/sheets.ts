@@ -17,23 +17,20 @@ export const fetchCategoriesFromSheet = async (url: string): Promise<string[]> =
     const response = await fetch(`${url}?action=GET_CATEGORIES`, { method: 'GET', cache: 'no-store' });
     const data = await response.json();
     
-    // 防禦性檢查：確保 data 是陣列
     if (!Array.isArray(data)) return [];
 
-    // 關鍵修正：確保陣列內只有字串。如果抓到的是物件（例如誤抓到交易紀錄），嘗試提取名稱或過濾掉。
     return data
       .map(item => {
         if (typeof item === 'string') return item;
         if (item && typeof item === 'object') {
-          // 如果後端回傳的是物件格式，嘗試找尋可能的名稱欄位
           return item.分類 || item.名稱 || item.name || item.label || '';
         }
         return String(item);
       })
-      .filter(c => c && typeof c === 'string' && c.trim() !== '' && !c.includes('{')); // 過濾掉空字串或殘留的 JSON 字串
+      .filter(c => c && typeof c === 'string' && c.trim() !== '' && !c.includes('{'));
   } catch (error) {
     console.error('Fetch categories failed:', error);
-    return ['餐飲', '購物', '娛樂', '交通', '其他']; // 失敗時回傳預設值
+    return ['餐飲', '購物', '娛樂', '交通', '其他'];
   }
 };
 
@@ -65,10 +62,12 @@ export const fetchTransactionsFromSheet = async (url: string): Promise<Transacti
           if (t === 'piggy' || t === '小豬') name = '小豬';
           else if (t === 'mandy') name = 'Mandy';
 
-          splitWith.push(name);
-          if (amount !== null) {
-            splitDetails[name] = amount;
-            hasCustomAmounts = true;
+          if (name) {
+            splitWith.push(name);
+            if (amount !== null) {
+              splitDetails[name] = amount;
+              hasCustomAmounts = true;
+            }
           }
         });
       }
@@ -81,9 +80,10 @@ export const fetchTransactionsFromSheet = async (url: string): Promise<Transacti
         category: (row['類別'] || '其他') as Category,
         amount: Number(row['金額']) || 0,
         merchant: row['店家名稱'] || '', 
+        mapUrl: row['地圖連結'] || '', // 讀取地圖連結
         item: row['描述'] || '',
         payerId: rawPayer,
-        isSplit: splitWith.length > 0,
+        isSplit: splitWith.length > 1,
         splitType: hasCustomAmounts ? 'custom' : 'equal',
         splitWith: splitWith,
         splitDetails: splitDetails,
@@ -110,6 +110,7 @@ export const saveToGoogleSheet = async (url: string, t: Transaction) => {
     '類別': t.category,
     '金額': t.amount,
     '店家名稱': t.merchant,
+    '地圖連結': t.mapUrl || '', // 寫入地圖連結
     '描述': t.item,
     '付錢的人': t.payerId,
     '分帳': serializeSplit(t),
@@ -128,6 +129,7 @@ export const updateTransactionInSheet = async (url: string, t: Transaction) => {
     '類別': t.category,
     '金額': t.amount,
     '店家名稱': t.merchant,
+    '地圖連結': t.mapUrl || '', // 更新地圖連結
     '描述': t.item,
     '付錢的人': t.payerId,
     '分帳': serializeSplit(t),

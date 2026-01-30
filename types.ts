@@ -14,6 +14,7 @@ export interface Transaction {
   amount: number;
   item: string;
   merchant: string;
+  mapUrl?: string; // 新增：地圖連結
   payerId: string;
   isSplit: boolean;
   splitType: 'equal' | 'custom';
@@ -24,7 +25,7 @@ export interface Transaction {
 
 export interface AppState {
   members: Member[];
-  categories: string[]; // 新增：存放從 Sheet 讀取的分類
+  categories: string[];
   transactions: Transaction[];
   currentUser: string;
   theme: 'piggy' | 'matcha';

@@ -43,7 +43,6 @@ const App: React.FC = () => {
       ]);
       
       setState(prev => {
-        // 嚴格檢查抓回來的 categories 是否為字串陣列
         const validCategories = (Array.isArray(categories) && categories.length > 0 && typeof categories[0] === 'string')
           ? categories 
           : prev.categories;
@@ -79,7 +78,8 @@ const App: React.FC = () => {
       isSplit: t.isSplit || false,
       splitType: t.splitType || 'equal',
       splitWith: t.splitWith || [state.currentUser],
-      splitDetails: t.splitDetails || {}
+      splitDetails: t.splitDetails || {},
+      mapUrl: t.mapUrl || '' // 確保 mapUrl 被寫入
     };
 
     setState(prev => ({ 
