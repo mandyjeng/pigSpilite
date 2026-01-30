@@ -1,8 +1,8 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Camera, Image as ImageIcon, Heart, CreditCard, Calendar, Calculator, Scale, Check } from 'lucide-react';
+import { Transaction, Member } from '../types';
+import * as React from 'react';
+import * as Lucide from 'lucide-react';
 import { processAIInput, processReceiptImage } from '../services/aiService';//注意
-import { Transaction, Category, Member } from '../types';
 
 interface AIInputProps {
   onAddTransaction: (t: Partial<Transaction>) => void;
@@ -134,7 +134,6 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
 
   const getMemberEmoji = (name: string) => name?.includes('Mandy') ? '💝' : '🐽';
   
-  // 使用 React.useMemo 確保引用正確
   const customTotal = React.useMemo(() => {
     return (pendingRecord?.splitWith || []).reduce((sum, id) => {
       return sum + (pendingRecord?.splitDetails?.[id] || 0);
@@ -161,17 +160,17 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
           disabled={isLoading || !inputText.trim()}
           className="absolute right-2.5 bottom-2 p-2.5 bg-[var(--pig-primary)] border-[2px] border-[#2D1B1B] rounded-full text-[#2D1B1B] active:translate-y-0.5 transition-all disabled:opacity-20 shadow-sm"
         >
-          {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} strokeWidth={3} />}
+          {isLoading ? <Lucide.Loader2 size={20} className="animate-spin" /> : <Lucide.Send size={20} strokeWidth={3} />}
         </button>
       </div>
       
       <div className="flex gap-6 justify-center w-full">
         <button onClick={() => galleryInputRef.current?.click()} className="h-14 w-14 bg-white border-[3px] border-[#2D1B1B] rounded-full flex items-center justify-center text-[#2D1B1B] pig-shadow-sm active:scale-90 transition-all">
-          <ImageIcon size={24} strokeWidth={3} />
+          <Lucide.Image size={24} strokeWidth={3} />
         </button>
         <input type="file" ref={galleryInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
         <button onClick={() => cameraInputRef.current?.click()} className="h-14 w-14 bg-white border-[3px] border-[#2D1B1B] rounded-full flex items-center justify-center text-[#2D1B1B] pig-shadow-sm active:scale-90 transition-all">
-          <Camera size={24} strokeWidth={3} />
+          <Lucide.Camera size={24} strokeWidth={3} />
         </button>
         <input type="file" ref={cameraInputRef} className="hidden" accept="image/*" capture="environment" onChange={handleFileChange} />
       </div>
@@ -182,7 +181,9 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
              <div className="flex justify-between items-center mb-3">
                <div className="w-8" />
                <h3 className="font-black text-xl text-center text-[#2D1B1B]">確認帳單 🐽</h3>
-               <button onClick={() => setPendingRecord(null)} className="text-slate-300 hover:text-red-500 transition-colors"><X size={24} strokeWidth={4} /></button>
+               <button onClick={() => setPendingRecord(null)} className="text-slate-300 hover:text-red-500 transition-colors">
+                  <Lucide.X size={24} strokeWidth={4} />
+               </button>
              </div>
 
             <div className="space-y-2.5 max-h-[60vh] overflow-y-auto no-scrollbar pr-1 pb-2 px-1">
@@ -195,7 +196,7 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
                   <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">店家</label>
                   <input className="w-full bg-transparent font-bold text-[13px] outline-none text-[#2D1B1B]" value={pendingRecord.merchant || ''} onChange={e => setPendingRecord({...pendingRecord, merchant: e.target.value})} />
                   <button onClick={openGoogleMap} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-[var(--pig-primary)] rounded-lg border-[1px] border-[#2D1B1B] text-[#2D1B1B] shadow-sm active:scale-90 transition-all">
-                    <MapPin size={14} strokeWidth={3} />
+                    <Lucide.MapPin size={14} strokeWidth={3} />
                   </button>
                 </div>
               </div>
@@ -226,7 +227,9 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
               </div>
 
               <div className="bg-white p-2.5 rounded-xl border-[2px] border-[#2D1B1B] pig-shadow-sm">
-                <label className="text-[9px] font-black text-[#2D1B1B] flex items-center gap-1.5 mb-1.5"><CreditCard size={9} className="text-[var(--pig-primary)]" /> 誰付款？</label>
+                <label className="text-[9px] font-black text-[#2D1B1B] flex items-center gap-1.5 mb-1.5">
+                  <Lucide.CreditCard size={9} className="text-[var(--pig-primary)]" /> 誰付款？
+                </label>
                 <div className="flex gap-2">
                   {safeMembers.map(m => (
                     <button key={m.id} onClick={() => setPendingRecord({...pendingRecord, payerId: m.id})} className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl border-[1.5px] transition-all ${pendingRecord.payerId === m.id ? 'bg-[var(--pig-primary)] border-[#2D1B1B]' : 'bg-slate-50 border-slate-200 opacity-40 grayscale'}`}>
@@ -239,7 +242,9 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
 
               <div className="bg-white p-3 rounded-2xl border-[2px] border-[#2D1B1B] pig-shadow-sm">
                 <div className="flex items-center justify-between mb-3">
-                  <label className="text-[10px] font-black text-[#2D1B1B] flex items-center gap-1.5"><Heart size={10} className="text-[var(--pig-primary)] fill-[var(--pig-primary)]" /> 誰分錢？</label>
+                  <label className="text-[10px] font-black text-[#2D1B1B] flex items-center gap-1.5">
+                    <Lucide.Heart size={10} className="text-[var(--pig-primary)] fill-[var(--pig-primary)]" /> 誰分錢？
+                  </label>
                   <div className="flex bg-[var(--pig-secondary)] rounded-lg p-0.5 border-[1px] border-[#2D1B1B]/10">
                     <button onClick={() => setPendingRecord({...pendingRecord, splitType: 'equal'})} className={`px-2 py-0.5 rounded-md text-[9px] font-black transition-all ${pendingRecord.splitType === 'equal' ? 'bg-[var(--pig-primary)] text-[#2D1B1B]' : 'text-slate-400'}`}>平分</button>
                     <button onClick={() => setPendingRecord({...pendingRecord, splitType: 'custom'})} className={`px-2 py-0.5 rounded-md text-[9px] font-black transition-all ${pendingRecord.splitType === 'custom' ? 'bg-[var(--pig-primary)] text-[#2D1B1B]' : 'text-slate-400'}`}>自訂</button>
@@ -278,7 +283,7 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
                         </div>
                       );
                     })}
-                    <div className="flex items-center justify-end gap-1.5 mt-3">{diff === 0 ? <span className="text-[11px] font-black text-green-500 flex items-center gap-1 bg-green-50 px-3 py-1 rounded-full border-[1.5px] border-green-100"><Check size={12} strokeWidth={4} /> 平衡</span> : <span className="text-[11px] font-black text-red-500 bg-red-50 px-3 py-1 rounded-full border-[1.5px] border-red-100">差 ${Math.abs(diff).toLocaleString()}</span>}</div>
+                    <div className="flex items-center justify-end gap-1.5 mt-3">{diff === 0 ? <span className="text-[11px] font-black text-green-500 flex items-center gap-1 bg-green-50 px-3 py-1 rounded-full border-[1.5px] border-green-100"><Lucide.Check size={12} strokeWidth={4} /> 平衡</span> : <span className="text-[11px] font-black text-red-500 bg-red-50 px-3 py-1 rounded-full border-[1.5px] border-red-100">差 ${Math.abs(diff).toLocaleString()}</span>}</div>
                   </div>
                 )}
               </div>
