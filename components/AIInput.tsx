@@ -13,7 +13,7 @@ interface AIInputProps {
   categories: string[];
 }
 
-const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, members, currentUserId, categories }) => {
+const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, members = [], currentUserId, categories = [] }) => {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [pendingRecord, setPendingRecord] = useState<Partial<Transaction> | null>(null);
@@ -30,19 +30,22 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
     }
   }, [inputText]);
 
+  const safeCategories = Array.isArray(categories) ? categories : [];
+  const safeMembers = Array.isArray(members) ? members : [];
+
   const handleTextSubmit = async () => {
     if (!inputText.trim() || isLoading) return;
     setIsLoading(true);
     try {
-      const result = await processAIInput(inputText, categories);
+      const result = await processAIInput(inputText, safeCategories);
       const amount = Number(result.amount) || 0;
-      const defaultSplitWith = members.map(m => m.id);
+      const defaultSplitWith = safeMembers.map(m => m.id);
       setPendingRecord({
         item: result.description || '記帳項目',
         merchant: result.merchant || '商家',
         amount: amount,
         type: (result.type === '收入' ? '收入' : '支出'),
-        category: result.category || (categories.length > 0 ? categories[0] : '其他'),
+        category: result.category || (safeCategories.length > 0 ? safeCategories[0] : '其他'),
         date: result.date || new Date().toISOString().split('T')[0],
         payerId: currentUserId,
         isSplit: defaultSplitWith.length > 1,
@@ -68,15 +71,15 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
       reader.onload = async () => {
         try {
           const base64 = (reader.result as string).split(',')[1];
-          const result = await processReceiptImage(base64, file.type, categories);
+          const result = await processReceiptImage(base64, file.type, safeCategories);
           const amount = Number(result.amount) || 0;
-          const defaultSplitWith = members.map(m => m.id);
+          const defaultSplitWith = safeMembers.map(m => m.id);
           setPendingRecord({
             item: result.description || '辨識項目',
             merchant: result.merchant || '辨識商家',
             amount: amount,
             type: (result.type === '收入' ? '收入' : '支出'),
-            category: result.category || (categories.length > 0 ? categories[0] : '其他'),
+            category: result.category || (safeCategories.length > 0 ? safeCategories[0] : '其他'),
             date: result.date || new Date().toISOString().split('T')[0],
             payerId: currentUserId,
             isSplit: defaultSplitWith.length > 1,
@@ -131,10 +134,12 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
 
   const getMemberEmoji = (name: string) => name?.includes('Mandy') ? '💝' : '🐽';
   
-  // 安全地計算總額
-  const customTotal = (pendingRecord?.splitWith || []).reduce((sum, id) => {
-    return sum + (pendingRecord?.splitDetails?.[id] || 0);
-  }, 0);
+  // 計算邏輯使用 useMemo 保護，防止意外 crash
+  const customTotal = useMemo(() => {
+    return (pendingRecord?.splitWith || []).reduce((sum, id) => {
+      return sum + (pendingRecord?.splitDetails?.[id] || 0);
+    }, 0);
+  }, [pendingRecord?.splitWith, pendingRecord?.splitDetails]);
   
   const diff = (pendingRecord?.amount || 0) - customTotal;
 
@@ -184,11 +189,11 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
                   <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">日期</label>
-                  <input type="date" className="w-full bg-transparent font-bold text-[13px] outline-none text-[#2D1B1B]" value={pendingRecord.date} onChange={e => setPendingRecord({...pendingRecord, date: e.target.value})} />
+                  <input type="date" className="w-full bg-transparent font-bold text-[13px] outline-none text-[#2D1B1B]" value={pendingRecord.date || ''} onChange={e => setPendingRecord({...pendingRecord, date: e.target.value})} />
                 </div>
                 <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B] relative pr-10">
                   <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">店家</label>
-                  <input className="w-full bg-transparent font-bold text-[13px] outline-none text-[#2D1B1B]" value={pendingRecord.merchant} onChange={e => setPendingRecord({...pendingRecord, merchant: e.target.value})} />
+                  <input className="w-full bg-transparent font-bold text-[13px] outline-none text-[#2D1B1B]" value={pendingRecord.merchant || ''} onChange={e => setPendingRecord({...pendingRecord, merchant: e.target.value})} />
                   <button onClick={openGoogleMap} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-[var(--pig-primary)] rounded-lg border-[1px] border-[#2D1B1B] text-[#2D1B1B] shadow-sm active:scale-90 transition-all">
                     <MapPin size={14} strokeWidth={3} />
                   </button>
@@ -200,10 +205,10 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
                   <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">分類</label>
                   <select 
                     className="w-full bg-transparent font-bold text-[13px] outline-none text-[#2D1B1B] truncate"
-                    value={pendingRecord.category}
+                    value={pendingRecord.category || ''}
                     onChange={e => setPendingRecord({...pendingRecord, category: e.target.value})}
                   >
-                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                    {safeCategories.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
@@ -216,24 +221,14 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
               </div>
 
               <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
-                <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">地圖連結 (選填)</label>
-                <input 
-                  placeholder="可貼上特定的地標網址..." 
-                  className="w-full bg-transparent font-bold text-[11px] outline-none text-[#2D1B1B] placeholder:text-slate-300" 
-                  value={pendingRecord.mapUrl || ''} 
-                  onChange={e => setPendingRecord({...pendingRecord, mapUrl: e.target.value})} 
-                />
-              </div>
-
-              <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
                 <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">品項細節</label>
-                <textarea className="w-full bg-transparent font-bold text-[13px] outline-none resize-none min-h-[80px] leading-tight text-[#2D1B1B]" value={pendingRecord.item} onChange={e => setPendingRecord({...pendingRecord, item: e.target.value})} />
+                <textarea className="w-full bg-transparent font-bold text-[13px] outline-none resize-none min-h-[80px] leading-tight text-[#2D1B1B]" value={pendingRecord.item || ''} onChange={e => setPendingRecord({...pendingRecord, item: e.target.value})} />
               </div>
 
               <div className="bg-white p-2.5 rounded-xl border-[2px] border-[#2D1B1B] pig-shadow-sm">
                 <label className="text-[9px] font-black text-[#2D1B1B] flex items-center gap-1.5 mb-1.5"><CreditCard size={9} className="text-[var(--pig-primary)]" /> 誰付款？</label>
                 <div className="flex gap-2">
-                  {members.map(m => (
+                  {safeMembers.map(m => (
                     <button key={m.id} onClick={() => setPendingRecord({...pendingRecord, payerId: m.id})} className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl border-[1.5px] transition-all ${pendingRecord.payerId === m.id ? 'bg-[var(--pig-primary)] border-[#2D1B1B]' : 'bg-slate-50 border-slate-200 opacity-40 grayscale'}`}>
                       <span className="text-base">{getMemberEmoji(m.name)}</span>
                       <span className="font-black text-[11px] truncate">{m.name}</span>
@@ -252,7 +247,7 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
                 </div>
                 
                 <div className="flex gap-2 mb-4">
-                  {members.map(m => (
+                  {safeMembers.map(m => (
                     <button key={m.id} onClick={() => toggleSplitMember(m.id)} className={`flex-1 flex items-center justify-center gap-2 px-2 py-2.5 rounded-xl border-[2px] transition-all ${pendingRecord.splitWith?.includes(m.id) ? 'bg-[var(--pig-primary)] border-[#2D1B1B] pig-shadow-sm' : 'bg-slate-50 border-slate-200 opacity-30 grayscale'}`}>
                       <span className="text-xl">{getMemberEmoji(m.name)}</span>
                       <span className="font-black text-[12px]">{m.name}</span>
@@ -262,8 +257,8 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
 
                 {pendingRecord.splitType === 'custom' && (
                   <div className="space-y-2.5 pt-1 animate-pop-in">
-                    {pendingRecord.splitWith?.map(mid => {
-                      const m = members.find(mem => mem.id === mid);
+                    {(pendingRecord.splitWith || []).map(mid => {
+                      const m = safeMembers.find(mem => mem.id === mid);
                       return (
                         <div key={mid} className="flex items-center justify-between bg-white px-3 py-2.5 rounded-2xl border-[2px] border-[#2D1B1B]/10 shadow-sm">
                           <div className="flex items-center gap-3">
@@ -285,13 +280,6 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
                     })}
                     <div className="flex items-center justify-end gap-1.5 mt-3">{diff === 0 ? <span className="text-[11px] font-black text-green-500 flex items-center gap-1 bg-green-50 px-3 py-1 rounded-full border-[1.5px] border-green-100"><Check size={12} strokeWidth={4} /> 平衡</span> : <span className="text-[11px] font-black text-red-500 bg-red-50 px-3 py-1 rounded-full border-[1.5px] border-red-100">差 ${Math.abs(diff).toLocaleString()}</span>}</div>
                   </div>
-                )}
-                
-                {pendingRecord.splitType === 'equal' && pendingRecord.splitWith && pendingRecord.splitWith.length > 0 && (
-                   <div className="text-center py-2 bg-[var(--pig-secondary)] rounded-xl border-[2px] border-dashed border-[#2D1B1B]/10">
-                      <p className="text-[9px] font-black text-[#2D1B1B]/40 uppercase mb-0.5">每人預計</p>
-                      <p className="text-base font-black text-[#2D1B1B]">${Math.round(pendingRecord.amount / pendingRecord.splitWith.length).toLocaleString()}</p>
-                   </div>
                 )}
               </div>
             </div>

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AppState, Transaction, Category, Member } from './types';
 import { TABS } from './constants';
 import Overview from './components/Overview';
@@ -9,6 +9,15 @@ import { fetchTransactionsFromSheet, fetchCategoriesFromSheet, saveToGoogleSheet
 
 const SHEET_URL = "https://script.google.com/macros/s/AKfycbyNMRpBKO4HYQrIwr3E984B7cUJNaDjQdr-KLDtWM2ykWXk6clvc_QlSGWS3f1GCBS-/exec";
 
+// 更具相容性的 ID 產生器，避免 crypto.randomUUID 在舊手機或特定環境失效
+const generateId = () => {
+  try {
+    return crypto.randomUUID();
+  } catch (e) {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  }
+};
+
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isAIProcessing, setIsAIProcessing] = useState(false);
@@ -17,9 +26,7 @@ const App: React.FC = () => {
   const [syncError, setSyncError] = useState<string | null>(null);
 
   const [state, setState] = useState<AppState>(() => {
-    const saved = localStorage.getItem('piggy_ledger_simple');
-    if (saved) return JSON.parse(saved);
-    return {
+    const defaultState: AppState = {
       members: [{ id: 'Mandy', name: 'Mandy' }, { id: '小豬', name: '小豬' }],
       categories: ['餐飲', '薪資', '娛樂', '購物', '其他'],
       transactions: [],
@@ -27,6 +34,24 @@ const App: React.FC = () => {
       theme: 'piggy',
       sheetUrl: SHEET_URL,
     };
+
+    try {
+      const saved = localStorage.getItem('piggy_ledger_simple');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // 強制檢查關鍵屬性是否存在且為陣列，防止舊資料導致崩潰
+        return {
+          ...defaultState,
+          ...parsed,
+          members: Array.isArray(parsed.members) ? parsed.members : defaultState.members,
+          categories: Array.isArray(parsed.categories) ? parsed.categories : defaultState.categories,
+          transactions: Array.isArray(parsed.transactions) ? parsed.transactions : []
+        };
+      }
+    } catch (e) {
+      console.error("LocalStorage hydration failed:", e);
+    }
+    return defaultState;
   });
 
   useEffect(() => {
@@ -43,7 +68,7 @@ const App: React.FC = () => {
       ]);
       
       setState(prev => {
-        const validCategories = (Array.isArray(categories) && categories.length > 0 && typeof categories[0] === 'string')
+        const validCategories = (Array.isArray(categories) && categories.length > 0)
           ? categories 
           : prev.categories;
 
@@ -66,20 +91,22 @@ const App: React.FC = () => {
   }, [syncAll]);
 
   const onAddTransaction = async (t: Partial<Transaction>) => {
+    if (!t) return;
+
     const newTransaction: Transaction = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       date: t.date || new Date().toISOString().split('T')[0],
       item: t.item || '新紀錄',
       merchant: t.merchant || '商家',
       category: (t.category || '其他') as Category,
-      amount: t.amount || 0,
+      amount: Number(t.amount) || 0,
       type: (t.type || '支出') as any,
       payerId: t.payerId || state.currentUser,
-      isSplit: t.isSplit || false,
+      isSplit: !!t.isSplit,
       splitType: t.splitType || 'equal',
-      splitWith: t.splitWith || [state.currentUser],
+      splitWith: Array.isArray(t.splitWith) ? t.splitWith : [state.currentUser],
       splitDetails: t.splitDetails || {},
-      mapUrl: t.mapUrl || '' // 確保 mapUrl 被寫入
+      mapUrl: t.mapUrl || ''
     };
 
     setState(prev => ({ 
@@ -133,11 +160,6 @@ const App: React.FC = () => {
               <p className="text-sm font-bold text-slate-400">
                 {isSyncing ? "正在與雲端豬圈連接" : "正在幫妳分析帳單細節"}
               </p>
-            </div>
-            <div className="flex gap-2">
-               <div className="w-2 h-2 bg-[var(--pig-primary)] rounded-full animate-pulse"></div>
-               <div className="w-2 h-2 bg-[var(--pig-primary)] rounded-full animate-pulse delay-75"></div>
-               <div className="w-2 h-2 bg-[var(--pig-primary)] rounded-full animate-pulse delay-150"></div>
             </div>
           </div>
         </div>
