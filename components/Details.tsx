@@ -106,13 +106,10 @@ const Details: React.FC<DetailsProps> = ({ state, onDeleteTransaction, updateSta
     .filter(t => t.item.toLowerCase().includes(searchQuery.toLowerCase()) || t.merchant.toLowerCase().includes(searchQuery.toLowerCase()))
     .filter(t => (startDate ? t.date >= startDate : true) && (endDate ? t.date <= endDate : true))
     .sort((a, b) => {
-      // 1. 日期降序
       const dateCompare = b.date.localeCompare(a.date);
       if (dateCompare !== 0) return dateCompare;
-
-      // 2. 同一天則按 rowIndex 降序
-      const rowA = a.rowIndex ?? 999999;
-      const rowB = b.rowIndex ?? 999999;
+      const rowA = a.rowIndex || 999999;
+      const rowB = b.rowIndex || 999999;
       return rowB - rowA;
     });
 

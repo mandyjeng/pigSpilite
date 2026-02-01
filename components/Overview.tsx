@@ -34,20 +34,7 @@ const Overview: React.FC<OverviewProps> = ({ state, onAddTransaction, setIsAIPro
   });
   const monthTotal = monthExpenses.reduce((acc, t) => acc + t.amount, 0);
 
-  // 排序邏輯：完全比照明細頁面
-  const recentTransactions = [...state.transactions]
-    .sort((a, b) => {
-      // 1. 日期降序
-      const dateCompare = b.date.localeCompare(a.date);
-      if (dateCompare !== 0) return dateCompare;
-      
-      // 2. 同一天則按 rowIndex 降序（最新輸入的 row 在最後面，所以 rowIndex 越大越新）
-      // 使用 ?? 確保 rowIndex 為 0 時不會被判斷成 999999
-      const rowA = a.rowIndex ?? 999999;
-      const rowB = b.rowIndex ?? 999999;
-      return rowB - rowA;
-    })
-    .slice(0, 3);
+  const recentTransactions = [...state.transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 3);
 
   return (
     <div className="space-y-6 pb-6">
