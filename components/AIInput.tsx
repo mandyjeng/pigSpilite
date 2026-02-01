@@ -294,7 +294,7 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
                 disabled={pendingRecord.splitType === 'custom' && diff !== 0}
                 className={`w-full py-4 border-[3px] border-[#2D1B1B] rounded-2xl font-black text-xl pig-shadow active:translate-y-1 active:shadow-none transition-all ${pendingRecord.splitType === 'custom' && diff !== 0 ? 'bg-slate-100 opacity-50' : 'bg-[var(--pig-primary)] text-[#2D1B1B]'}`}
               >
-                確記記下 🐷
+                豬豬請記好 🐷
               </button>
             </div>
           </div>
