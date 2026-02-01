@@ -4,6 +4,7 @@ import { Transaction, Category, AppState } from '../types';
 import { getCategoryIcon, getCategoryColorClass, getMemberEmoji } from '../constants';
 import * as Lucide from 'lucide-react';
 import { updateTransactionInSheet } from '../services/sheets';
+import PlacePicker from './PlacePicker';
 
 interface DetailsProps {
   state: AppState;
@@ -24,6 +25,7 @@ const Details: React.FC<DetailsProps> = ({ state, onDeleteTransaction, updateSta
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [editingItem, setEditingItem] = React.useState<Transaction | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+  const [showPlacePicker, setShowPlacePicker] = React.useState(false);
 
   const clearDateFilter = () => { setStartDate(''); setEndDate(''); };
 
@@ -64,6 +66,17 @@ const Details: React.FC<DetailsProps> = ({ state, onDeleteTransaction, updateSta
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleSelectPlace = (place: { title: string; uri: string }) => {
+    if (editingItem) {
+      setEditingItem({
+        ...editingItem,
+        merchant: place.title,
+        mapUrl: place.uri
+      });
+    }
+    setShowPlacePicker(false);
   };
 
   const openGoogleMap = (t: Transaction) => {
@@ -193,9 +206,14 @@ const Details: React.FC<DetailsProps> = ({ state, onDeleteTransaction, updateSta
                 <div className="bg-[var(--pig-secondary)] p-3 rounded-xl border-[2px] border-[#2D1B1B] relative pr-10">
                   <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">店家</label>
                   <input className="w-full bg-transparent font-black text-base outline-none text-[#2D1B1B]" value={editingItem.merchant} onChange={e => setEditingItem({...editingItem, merchant: e.target.value})} />
-                  <button onClick={() => openGoogleMap(editingItem)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-[var(--pig-primary)] rounded-lg border-[1px] border-[#2D1B1B] text-[#2D1B1B] shadow-sm active:scale-90 transition-all">
-                    <Lucide.MapPin size={14} strokeWidth={3} />
-                  </button>
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                    <button 
+                      onClick={() => setShowPlacePicker(true)} 
+                      className="p-1.5 bg-white rounded-lg border-[1px] border-[#2D1B1B] text-[var(--pig-primary)] shadow-sm active:scale-90 transition-all"
+                    >
+                      <Lucide.MapPin size={14} strokeWidth={4} />
+                    </button>
+                  </div>
                 </div>
               </div>
               
@@ -302,6 +320,14 @@ const Details: React.FC<DetailsProps> = ({ state, onDeleteTransaction, updateSta
             </div>
           )}
         </div>
+      )}
+
+      {showPlacePicker && (
+        <PlacePicker 
+          initialQuery={editingItem?.merchant || ''}
+          onSelect={handleSelectPlace}
+          onClose={() => setShowPlacePicker(false)}
+        />
       )}
     </div>
   );

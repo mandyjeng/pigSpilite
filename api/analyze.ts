@@ -104,3 +104,33 @@ export default async function handler(req: any, res: any) {
     });
   }
 }
+
+export const searchPlaces = async (query: string, lat?: number, lng?: number) => {
+  // const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const apiKey = process.env.API_KEY || process.env.GOOGLE_API_KEY;
+  if (!apiKey) throw new Error("Server Error: API Key is missing.");
+  
+  const response = await apiKey.models.generateContent({
+    model: 'gemini-2.5-flash-latest', // 使用支援地圖工具的 2.5 版本
+    contents: `請幫我搜尋這家店的詳細資訊： "${query}"。`,
+    config: {
+      tools: [{ googleMaps: {} }],
+      toolConfig: {
+        retrievalConfig: {
+          latLng: lat && lng ? { latitude: lat, longitude: lng } : undefined
+        }
+      }
+    },
+  });
+
+  // 提取地圖資訊
+  const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+  const results = chunks
+    .filter((c: any) => c.maps)
+    .map((c: any) => ({
+      title: c.maps.title,
+      uri: c.maps.uri
+    }));
+    
+  return results;
+};
