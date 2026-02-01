@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import * as Lucide from 'lucide-react';
-import { searchPlaces } from '../services/gemini';
+import { searchPlaces } from '../services/aiService';//注意//注意
 
 interface PlacePickerProps {
   onSelect: (place: { title: string; uri: string }) => void;
