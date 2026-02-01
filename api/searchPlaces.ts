@@ -1,7 +1,14 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(req: any, res: any) {
-  // CORS 設定 (若前後端在同網域通常不需要，但保險起見保留)
+// 定義回傳給前端的資料結構
+interface SearchResult {
+  title: string;
+  uri: string;
+}
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // --- 1. CORS 設定 (保持不變) ---
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -12,51 +19,77 @@ export default async function handler(req: any, res: any) {
   try {
     const { query, lat, lng } = req.body;
     const apiKey = process.env.API_KEY || process.env.GOOGLE_API_KEY;
-    
-    if (!apiKey) throw new Error("Server Error: API Key is missing.");
 
+    if (!apiKey) {
+      throw new Error("Server Error: API Key is missing.");
+    }
+
+    // --- 2. 初始化 Gemini ---
     const genAI = new GoogleGenerativeAI(apiKey);
-    
-    // 使用支援地圖工具的模型
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash-exp', // 建議使用較新的模型以支援工具
-      tools: [{ google_search_retrieval: { dynamic_retrieval_config: { mode: "MODE_DYNAMIC", dynamic_threshold: 0.7 } } }] 
-      // 注意: Google Maps Tool 在 Gemini API 的實作方式可能會變動，
-      // 若你的環境無法使用 maps tool，建議改用標準 Google Places API 或上面的 Search Grounding
+
+    // 使用支援搜尋工具的模型
+    // 注意: gemini-2.0-flash-exp 是實驗性模型，若不穩定可改回 gemini-1.5-flash
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash-exp",
+      tools: [{
+        // 設定 Google 搜尋工具
+        googleSearchRetrieval: {
+          dynamicRetrievalConfig: {
+            mode: "MODE_DYNAMIC",
+            dynamicThreshold: 0.6, // 設定觸發搜尋的敏感度
+          },
+        },
+      }],
     });
 
-    // 這裡沿用你原本的邏輯，修正為後端執行
-    // 注意：目前的 Gemini SDK (Node.js) 對 Maps Tool 的支援可能需要特定的設定
-    // 這裡示範標準生成內容，若你需要特定的 Grounding 請參照官方文件
-    const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: `請幫我搜尋這家店的詳細資訊： "${query}"。` }] }],
-        // 如果你的 SDK 版本支援 tools 設定，請在此加入
-    });
+    // --- 3. 建構 Prompt ---
+    // 如果有座標，就加入提示詞中，讓搜尋結果優先顯示附近的店
+    const locationContext = (lat && lng) 
+      ? `(位置座標: ${lat}, ${lng}，請優先搜尋此座標附近的店家)` 
+      : '';
+      
+    const prompt = `請幫我搜尋"${query}"這地點或店家的詳細資訊。
+    ${locationContext}
+    請提供店名與相關連結(如 Google Maps 連結或官方網站)。`;
 
+    // --- 4. 執行生成 ---
+    const result = await model.generateContent(prompt);
     const response = await result.response;
     
-    // 假設你要回傳 Grounding Metadata
+    // --- 5. 解析搜尋結果 (Grounding Metadata) ---
+    // 這是 Gemini 搜尋工具回傳資料的標準路徑
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    const results = chunks
-      .filter((c: any) => c.web?.uri || c.maps) // 修正過濾邏輯以適應回傳
+    
+    // 提取有效的搜尋結果
+    let searchResults: SearchResult[] = chunks
+      .filter((c: any) => c.web?.uri && c.web?.title) // 確保有標題和連結
       .map((c: any) => ({
-        title: c.web?.title || "未知地點",
-        uri: c.web?.uri || ""
+        title: c.web.title,
+        uri: c.web.uri
       }));
 
-    // 若沒有 grounding 結果，回傳模擬資料或錯誤 (視需求調整)
-    if (results.length === 0) {
-        // 為了讓前端測試，如果 API 沒回傳 grounding，可以回傳一個模擬結果
-        // 實際專案建議接 Google Places API
-        return res.status(200).json([
-            { title: `${query} (搜尋結果)`, uri: `https://www.google.com/maps/search/${query}` }
-        ]);
+    // --- 6. 備案處理 (Fallback) ---
+    // 如果沒有搜尋到特定的 Grounding Metadata (有時候 AI 會直接用文字回答但沒附連結)
+    // 我們手動建立一個 Google Maps 搜尋連結給使用者
+    if (searchResults.length === 0) {
+      console.log("Gemini 沒回傳 Grounding chunks，使用備案連結");
+      searchResults = [
+        { 
+          title: `搜尋：${query}`, 
+          uri: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` 
+        }
+      ];
     }
-    
-    return res.status(200).json(results);
+
+    // 只回傳前 5 筆結果，避免太多雜訊
+    return res.status(200).json(searchResults.slice(0, 5));
 
   } catch (error: any) {
     console.error("Search API Error:", error);
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ 
+      message: error.message || "搜尋發生錯誤",
+      // 開發階段可以回傳 error details 方便除錯
+      details: error.toString() 
+    });
   }
 }
