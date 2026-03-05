@@ -2,7 +2,7 @@
 import React from 'react';
 import { AppState } from '../types';
 import { getMemberEmoji } from '../constants';
-import { UserCheck, Palette, RefreshCw } from 'lucide-react';
+import { UserCheck, Palette, RefreshCw, ExternalLink } from 'lucide-react';
 
 interface SettingsProps {
   state: AppState;
@@ -22,12 +22,21 @@ const Settings: React.FC<SettingsProps> = ({ state, updateState, onReloadManagem
             </div>
             <h2 className="text-xl font-black text-[#2D1B1B]">雲端同步</h2>
           </div>
-          <button 
-            onClick={onReloadManagement}
-            className="px-5 py-2.5 bg-[var(--pig-primary)] text-[#2D1B1B] rounded-2xl border-[2.5px] border-[#2D1B1B] font-black text-sm pig-shadow-sm active:translate-y-0.5 transition-all"
-          >
-            手動讀取
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => window.open('https://docs.google.com/spreadsheets/d/12Ep8KfgXMZyBMIgu7DFFe5Wmty5YMg9y_FbJjbzHEZ8/edit?gid=2085058338#gid=2085058338', '_blank')}
+              className="px-5 py-2.5 bg-white text-[#2D1B1B] rounded-2xl border-[2.5px] border-[#2D1B1B] font-black text-sm pig-shadow-sm active:translate-y-0.5 transition-all flex items-center gap-2"
+            >
+              <ExternalLink size={16} strokeWidth={3} />
+              開啟帳本
+            </button>
+            <button 
+              onClick={onReloadManagement}
+              className="px-5 py-2.5 bg-[var(--pig-primary)] text-[#2D1B1B] rounded-2xl border-[2.5px] border-[#2D1B1B] font-black text-sm pig-shadow-sm active:translate-y-0.5 transition-all"
+            >
+              手動讀取
+            </button>
+          </div>
         </div>
         <div className="bg-[var(--pig-secondary)]/50 p-4 rounded-2xl border-[2px] border-dashed border-[#2D1B1B]/10">
           <p className="text-[12px] font-bold text-slate-400 uppercase tracking-wider leading-relaxed text-center">
