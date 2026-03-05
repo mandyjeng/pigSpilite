@@ -72,3 +72,24 @@ export const processReceiptImage = async (base64Data: string, mimeType: string, 
     throw error;
   }
 };
+
+/**
+ * 前端呼叫：搜尋地點資訊
+ */
+export const searchPlaces = async (query: string, lat?: number, lng?: number) => {
+  try {
+    const response = await fetch('/api/search-places', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, lat, lng }),
+    });
+
+    if (!response.ok) throw new Error('地點搜尋失敗');
+    
+    // 回傳格式：Array<{ title: string, uri: string }>
+    return await response.json();
+  } catch (error) {
+    console.error("Search places failed:", error);
+    return []; // 出錯時回傳空陣列，避免 UI 當掉
+  }
+};
