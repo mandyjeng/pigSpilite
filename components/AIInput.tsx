@@ -2,7 +2,7 @@
 import { Transaction, Member } from '@/types';
 import * as React from 'react';
 import * as Lucide from 'lucide-react';
-import { processAIInput, processReceiptImage } from '@/services/gemini';
+import { processAIInput, processReceiptImage } from '../services/aiService';//注意//注意
 import { getMemberEmoji } from '@/constants';
 import PlacePicker from '@/components/PlacePicker';
 
