@@ -2,8 +2,9 @@
 import { Transaction, Member } from '../types';
 import * as React from 'react';
 import * as Lucide from 'lucide-react';
-import { processAIInput, processReceiptImage } from '../services/aiService';//注意//注意
+import { processAIInput, processReceiptImage } from '../services/gemini';
 import { getMemberEmoji } from '../constants';
+import PlacePicker from './PlacePicker';
 
 interface AIInputProps {
   onAddTransaction: (t: Partial<Transaction>) => void;
@@ -18,6 +19,7 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
   const [inputText, setInputText] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [pendingRecord, setPendingRecord] = React.useState<Partial<Transaction> | null>(null);
+  const [showPlacePicker, setShowPlacePicker] = React.useState(false);
   const cameraInputRef = React.useRef<HTMLInputElement>(null);
   const galleryInputRef = React.useRef<HTMLInputElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -104,6 +106,17 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
     }
   };
 
+  const handleSelectPlace = (place: { title: string; uri: string }) => {
+    if (pendingRecord) {
+      setPendingRecord({
+        ...pendingRecord,
+        merchant: place.title,
+        mapUrl: place.uri
+      });
+    }
+    setShowPlacePicker(false);
+  };
+
   const openGoogleMap = () => {
     if (!pendingRecord) return;
     const url = pendingRecord.mapUrl && pendingRecord.mapUrl.startsWith('http') 
@@ -141,6 +154,24 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
   
   const diff = (pendingRecord?.amount || 0) - customTotal;
 
+  const handleManualInput = () => {
+    const defaultSplitWith = safeMembers.map(m => m.id);
+    setPendingRecord({
+      item: '',
+      merchant: '',
+      amount: 0,
+      type: '支出',
+      category: safeCategories.length > 0 ? safeCategories[0] : '其他',
+      date: new Date().toISOString().split('T')[0],
+      payerId: currentUserId,
+      isSplit: defaultSplitWith.length > 1,
+      splitType: 'equal',
+      splitWith: defaultSplitWith,
+      splitDetails: {},
+      mapUrl: ''
+    });
+  };
+
   return (
     <div className="flex flex-col items-center gap-4 w-full">
       <div className="w-full relative bg-white border-[3px] border-[#2D1B1B] rounded-[1.8rem] overflow-hidden pig-shadow-sm">
@@ -164,6 +195,9 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
       </div>
       
       <div className="flex gap-6 justify-center w-full">
+        <button onClick={handleManualInput} className="h-14 w-14 bg-white border-[3px] border-[#2D1B1B] rounded-full flex items-center justify-center text-[#2D1B1B] pig-shadow-sm active:scale-90 transition-all">
+          <Lucide.Plus size={24} strokeWidth={3} />
+        </button>
         <button onClick={() => galleryInputRef.current?.click()} className="h-14 w-14 bg-white border-[3px] border-[#2D1B1B] rounded-full flex items-center justify-center text-[#2D1B1B] pig-shadow-sm active:scale-90 transition-all">
           <Lucide.Image size={24} strokeWidth={3} />
         </button>
@@ -194,9 +228,20 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
                 <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B] relative pr-10">
                   <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">店家</label>
                   <input className="w-full bg-transparent font-bold text-[13px] outline-none text-[#2D1B1B]" value={pendingRecord.merchant || ''} onChange={e => setPendingRecord({...pendingRecord, merchant: e.target.value})} />
-                  <button onClick={openGoogleMap} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-[var(--pig-primary)] rounded-lg border-[1px] border-[#2D1B1B] text-[#2D1B1B] shadow-sm active:scale-90 transition-all">
-                    <Lucide.MapPin size={14} strokeWidth={3} />
-                  </button>
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                    <button 
+                      onClick={() => setShowPlacePicker(true)} 
+                      className="p-1.5 bg-white rounded-lg border-[1px] border-[#2D1B1B] text-[var(--pig-primary)] shadow-sm active:scale-90 transition-all"
+                    >
+                      <Lucide.Search size={14} strokeWidth={4} />
+                    </button>
+                    <button 
+                      onClick={openGoogleMap} 
+                      className="p-1.5 bg-white rounded-lg border-[1px] border-[#2D1B1B] text-[#2D1B1B] shadow-sm active:scale-90 transition-all"
+                    >
+                      <Lucide.MapPin size={14} strokeWidth={3} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -218,6 +263,17 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
                     <input type="number" className="w-full bg-transparent font-black text-lg outline-none text-[#2D1B1B] tracking-tight" value={pendingRecord.amount || 0} onChange={e => setPendingRecord({...pendingRecord, amount: Number(e.target.value)})} />
                   </div>
                 </div>
+              </div>
+
+              {/* 地圖連結 (選填) */}
+              <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
+                <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">地圖連結 (選填)</label>
+                <input 
+                  placeholder="可貼上特定的地標網址..." 
+                  className="w-full bg-transparent font-bold text-[12px] outline-none text-[#2D1B1B] placeholder:text-slate-300" 
+                  value={pendingRecord.mapUrl || ''} 
+                  onChange={e => setPendingRecord({...pendingRecord, mapUrl: e.target.value})} 
+                />
               </div>
 
               <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
@@ -299,6 +355,14 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
             </div>
           </div>
         </div>
+      )}
+
+      {showPlacePicker && (
+        <PlacePicker 
+          initialQuery={pendingRecord?.merchant || ''}
+          onSelect={handleSelectPlace}
+          onClose={() => setShowPlacePicker(false)}
+        />
       )}
     </div>
   );
