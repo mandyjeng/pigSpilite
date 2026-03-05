@@ -3,8 +3,9 @@ import { Transaction, Member } from '@/types';
 import * as React from 'react';
 import * as Lucide from 'lucide-react';
 import { processAIInput, processReceiptImage } from '../services/aiService';//注意//注意
-import { getMemberEmoji } from '@/constants';
+import { getMemberEmoji, getCategoryIcon, getCategoryColorClass } from '@/constants';
 import PlacePicker from '@/components/PlacePicker';
+import CategoryPicker from '@/components/CategoryPicker';
 
 interface AIInputProps {
   onAddTransaction: (t: Partial<Transaction>) => void;
@@ -247,14 +248,11 @@ const AIInput: React.FC<AIInputProps> = ({ onAddTransaction, setIsAIProcessing, 
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
-                  <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">分類</label>
-                  <select 
-                    className="w-full bg-transparent font-bold text-[13px] outline-none text-[#2D1B1B] truncate"
+                  <CategoryPicker 
                     value={pendingRecord.category || ''}
-                    onChange={e => setPendingRecord({...pendingRecord, category: e.target.value})}
-                  >
-                    {safeCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+                    categories={safeCategories}
+                    onChange={cat => setPendingRecord({...pendingRecord, category: cat})}
+                  />
                 </div>
                 <div className="bg-[var(--pig-secondary)] p-2.5 rounded-xl border-[2px] border-[#2D1B1B]">
                   <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">總額</label>

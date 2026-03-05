@@ -12,6 +12,7 @@ export const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   '居家': <Lucide.Home size={18} />,
   '豬窩': <Lucide.Home size={18} />,   
   '個人': <Lucide.Heart size={18} />,
+  '醫藥': <Lucide.PlusCircle size={18} />,
   '其他': <Lucide.MoreHorizontal size={18} />,
 };
 
@@ -25,6 +26,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   '居家': 'bg-amber-100 text-amber-600',
   '豬窩': 'bg-amber-100 text-amber-600',
   '個人': 'bg-indigo-100 text-indigo-600',
+  '醫藥': 'bg-teal-100 text-teal-600',
   '其他': 'bg-slate-100 text-slate-600',
 };
 

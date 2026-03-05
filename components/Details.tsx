@@ -4,6 +4,7 @@ import { Transaction, Category, AppState } from '@/types';
 import { getCategoryIcon, getCategoryColorClass, getMemberEmoji } from '@/constants';
 import * as Lucide from 'lucide-react';
 import { updateTransactionInSheet } from '@/services/sheets';
+import CategoryPicker from '@/components/CategoryPicker';
 
 interface DetailsProps {
   state: AppState;
@@ -201,10 +202,11 @@ const Details: React.FC<DetailsProps> = ({ state, onDeleteTransaction, updateSta
               
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-[var(--pig-secondary)] p-3 rounded-xl border-[2px] border-[#2D1B1B] transition-colors duration-300">
-                  <label className="text-[9px] font-black text-slate-400 uppercase mb-0.5 block">分類</label>
-                  <select className="w-full bg-transparent font-black text-base outline-none text-[#2D1B1B] truncate" value={editingItem.category} onChange={e => setEditingItem({...editingItem, category: e.target.value})}>
-                    {state.categories.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+                  <CategoryPicker 
+                    value={editingItem.category}
+                    categories={state.categories}
+                    onChange={cat => setEditingItem({...editingItem, category: cat})}
+                  />
                 </div>
                 <div className="bg-[var(--pig-secondary)] p-3 rounded-xl border-[2px] border-[#2D1B1B]">
                   <label className="text-[8px] font-black text-slate-400 uppercase mb-0.5 block">總額</label>
