@@ -20,6 +20,15 @@ const generateId = () => {
   }
 };
 
+const deduplicateTransactions = (txs: Transaction[]): Transaction[] => {
+  const seen = new Set<string>();
+  return txs.filter(t => {
+    if (!t.id || seen.has(t.id)) return false;
+    seen.add(t.id);
+    return true;
+  });
+};
+
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isAIProcessing, setIsAIProcessing] = useState(false);
@@ -46,7 +55,7 @@ const App: React.FC = () => {
           ...parsed,
           members: Array.isArray(parsed.members) ? parsed.members : defaultState.members,
           categories: Array.isArray(parsed.categories) ? parsed.categories : defaultState.categories,
-          transactions: Array.isArray(parsed.transactions) ? parsed.transactions : []
+          transactions: Array.isArray(parsed.transactions) ? deduplicateTransactions(parsed.transactions) : []
         };
       }
     } catch (e) {
@@ -73,9 +82,10 @@ const App: React.FC = () => {
           ? categories 
           : prev.categories;
 
+        const newTransactions = Array.isArray(transactions) ? transactions : [];
         return { 
           ...prev, 
-          transactions: Array.isArray(transactions) ? transactions : [],
+          transactions: deduplicateTransactions(newTransactions),
           categories: validCategories
         };
       });
@@ -112,7 +122,7 @@ const App: React.FC = () => {
 
     setState(prev => ({ 
       ...prev, 
-      transactions: [newTransaction, ...prev.transactions] 
+      transactions: deduplicateTransactions([newTransaction, ...prev.transactions]) 
     }));
     
     await saveToGoogleSheet(SHEET_URL, newTransaction);

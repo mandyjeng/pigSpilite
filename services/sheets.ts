@@ -92,6 +92,7 @@ export const fetchTransactionsFromSheet = async (url: string): Promise<Transacti
         }
 
         if (splitWith.length === 0) splitWith.push(rawPayer);
+        const uniqueSplitWith = Array.from(new Set(splitWith));
 
         return {
           id: String(row['ID'] || `row-${row.rowIndex}`),
@@ -104,9 +105,9 @@ export const fetchTransactionsFromSheet = async (url: string): Promise<Transacti
           mapUrl: String(row['地圖連結'] || ''),
           item: String(row['描述'] || ''),
           payerId: rawPayer,
-          isSplit: splitWith.length > 1,
+          isSplit: uniqueSplitWith.length > 1,
           splitType: hasCustomAmounts ? 'custom' : 'equal',
-          splitWith: splitWith,
+          splitWith: uniqueSplitWith,
           splitDetails: splitDetails,
         };
       });
