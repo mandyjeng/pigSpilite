@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { AppState } from '../types';
-import { getMemberEmoji } from '../constants';
+import { AppState } from '@/types';
+import { getMemberEmoji } from '@/constants';
 import { UserCheck, Palette, RefreshCw, ExternalLink } from 'lucide-react';
 
 interface SettingsProps {

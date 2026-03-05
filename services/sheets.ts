@@ -1,5 +1,5 @@
 
-import { Transaction, Category } from '../types';
+import { Transaction, Category } from '@/types';
 
 const toLocalDateString = (dateInput: any): string => {
   if (!dateInput) return '';

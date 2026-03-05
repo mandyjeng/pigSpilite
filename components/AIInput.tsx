@@ -1,10 +1,10 @@
 
-import { Transaction, Member } from '../types';
+import { Transaction, Member } from '@/types';
 import * as React from 'react';
 import * as Lucide from 'lucide-react';
-import { processAIInput, processReceiptImage } from '../services/gemini';
-import { getMemberEmoji } from '../constants';
-import PlacePicker from './PlacePicker';
+import { processAIInput, processReceiptImage } from '@/services/gemini';
+import { getMemberEmoji } from '@/constants';
+import PlacePicker from '@/components/PlacePicker';
 
 interface AIInputProps {
   onAddTransaction: (t: Partial<Transaction>) => void;

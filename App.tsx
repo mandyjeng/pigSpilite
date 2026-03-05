@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { AppState, Transaction, Category, Member } from './types';
-import { TABS, getMemberEmoji } from './constants';
-import Overview from './components/Overview';
-import Details from './components/Details';
-import Settings from './components/Settings';
-import { fetchTransactionsFromSheet, fetchCategoriesFromSheet, saveToGoogleSheet, deleteTransactionFromSheet } from './services/sheets';
+import { AppState, Transaction, Category, Member } from '@/types';
+import { TABS, getMemberEmoji } from '@/constants';
+import Overview from '@/components/Overview';
+import Details from '@/components/Details';
+import Settings from '@/components/Settings';
+import { fetchTransactionsFromSheet, fetchCategoriesFromSheet, saveToGoogleSheet, deleteTransactionFromSheet } from '@/services/sheets';
 
 const SHEET_URL = "https://script.google.com/macros/s/AKfycbyNMRpBKO4HYQrIwr3E984B7cUJNaDjQdr-KLDtWM2ykWXk6clvc_QlSGWS3f1GCBS-/exec";
 

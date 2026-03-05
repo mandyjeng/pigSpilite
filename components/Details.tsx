@@ -1,9 +1,9 @@
 
 import * as React from 'react';
-import { Transaction, Category, AppState } from '../types';
-import { getCategoryIcon, getCategoryColorClass, getMemberEmoji } from '../constants';
+import { Transaction, Category, AppState } from '@/types';
+import { getCategoryIcon, getCategoryColorClass, getMemberEmoji } from '@/constants';
 import * as Lucide from 'lucide-react';
-import { updateTransactionInSheet } from '../services/sheets';
+import { updateTransactionInSheet } from '@/services/sheets';
 
 interface DetailsProps {
   state: AppState;

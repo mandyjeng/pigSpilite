@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Transaction, AppState, Category } from '../types';
-import AIInput from './AIInput';
-import { getCategoryIcon, getCategoryColorClass } from '../constants';
+import { Transaction, AppState, Category } from '@/types';
+import AIInput from '@/components/AIInput';
+import { getCategoryIcon, getCategoryColorClass } from '@/constants';
 import { TrendingUp, ReceiptText, Heart } from 'lucide-react';
 
 interface OverviewProps {
